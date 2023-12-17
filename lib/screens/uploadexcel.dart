@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import '../model/registermodel.dart';
 import 'luckywheel.dart';
 
 
@@ -12,25 +13,42 @@ class UploadExcelScreen extends StatefulWidget {
 }
 
 class _UploadExcelScreenState extends State<UploadExcelScreen> {
+  String message = "";
 
-  void _navigateToLuckyDraw (BuildContext context) {
 
+  void _navigateToLuckyDraw(BuildContext context) async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      dialogTitle: 'Select CSV',
+      allowMultiple: true,
+      type: FileType.custom,
+      allowedExtensions: ['csv'],
+    );
+
+    print(result);
+
+    if (result != null && result.files.isNotEmpty) {
+      var fileBytes = result.files.first.bytes;
+      var formater = String.fromCharCodes(fileBytes!);
+
+      List<RegistersModel> listLuckerDrawer = [];
+      final contacts = formater.split(';'); // Carriage Return ascii code 13
+      for (int i = 0; i < contacts.length - 1; i++) {
+        final contactData = contacts[i].split(',');
+        listLuckerDrawer.add(RegistersModel(
+            name: contactData[0],
+            email: contactData[1]
+        ));
+      }
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => LuckyWheelPage(items: listLuckerDrawer)),
+      );
+    } else {
+      //return 'O documento não foi retornado';
+    }
+    // Redirect to the next page after the file upload is complete
   }
-  // Future<void> _navigateToLuckyDraw(BuildContext context) async {
-  //   FilePickerResult? result = await FilePicker.platform.pickFiles(
-  //     type: FileType.custom,
-  //     allowedExtensions: ['xlsx', 'xls'],
-  //   );
-  //
-  //   if (result != null && result.files.isNotEmpty) {
-  //     Navigator.push(
-  //       context,
-  //       MaterialPageRoute(
-  //         builder: (context) => const Screen2(),
-  //       ),
-  //     );
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
